@@ -1,3 +1,8 @@
+import io
+import base64
+from tkinter import ttk
+from urllib.request import urlopen
+from PIL import Image, ImageTk
 import re
 import glob
 import os
@@ -13,7 +18,7 @@ import threading
 logging.basicConfig(filename='log.txt', filemode='w', level=logging.INFO, format='%(asctime)s - %(message)s')
 
 # Variables for the site URL and API credentials
-site_url = 'https://yourshop.co.uk'
+site_url = 'https://xx.co.uk'
 client_key = 'xx'
 client_secret = 'xx'
 
@@ -33,28 +38,21 @@ def main():
         and returns a list of their SKUs.
         """
         sku_list = []
-        page = 1
         
-        while True:
-            # Get products from the WooCommerce API
-            products = wc_api.get('products', params={'per_page': 100, 'page': page}).json()
-            
-            # Break the loop if there are no more products
-            if not products:
-                break
-            
-            # Loop through each product
-            for product in products:
-                # If the product has no description, add its SKU to the list
-                if not product['description']:
-                    sku_list.append(product['sku'])
-            
-            # Increment the page number to fetch the next page of products
-            page += 1
-        print(f'Products found: {sku_list}')
-        return sku_list
-        
+        # Get all products from the WooCommerce API
+        response = wc_api.get('products', params={'per_page': 100})
+        all_products = response.json()
 
+        # Add this line to print the JSON response
+        #print(f'JSON Response: {all_products}')
+        
+        # Loop through each product
+        for product in all_products:
+            # If the product has no description, add its SKU to the list
+            if not product['description']:
+                sku_list.append(product['sku'])
+        
+        return sku_list
 
     # Get the latest CSV file
     print('Searching for latest CSV file...')
@@ -159,7 +157,7 @@ if __name__ == '__main__':
         root.destroy()
 
     exit_button = tk.Button(root, text="Exit", command=exit_button_click)
-    exit_button.grid(column=1, row=1, pady=10)
+    exit_button.grid(column=0, row=2, pady=10)
 
     # Run the GUI
     root.mainloop()
