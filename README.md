@@ -1,5 +1,7 @@
 # BookDescriptor
-This script automates the process of updating missing product descriptions on a WooCommerce website from a local csv source.
+This script automates the process of updating missing product descriptions on a WooCommerce website from a local csv source. The code was written for a specific book shop struggling with legally licensed Synopsis information being provided in a separate outdated format. You may need to remove or change some of these restraints to use UTF8 encoding on the csv file for example. The csv file needs to have a SKU & Synopsis column at the minimum, and match the current naming structure. 
+
+The script is likely inefficient, but by design will have to make less and less changes over time if used as designed. The use case is to mop up a large amount of missing descriptions with high quality replacements from a local source.
 
 1. **Connects to the WooCommerce website** using the provided credentials.
 2. **Finds the latest CSV file** containing product information, such as SKUs and descriptions, in the script's directory.
