@@ -23,9 +23,48 @@ Other parts of this repo: <br />
 
 Please test this script on a dev site before letting loose on production, i am not responsible for what this script does to your site, even though i have used and tested it extensively.
 
-Usage of bookDescriptor.py <br />
+Usage of bookDescriptor.py (not ready for production yet) <br />
 ./bookDescriptor.py --download  <br />
 ./bookDescriptor.py --local <br />
 
+## Installation & Usage
+-Clone the repo locally (run on your PC, not the webserver)<br />
+-Create API Key & Secret in WooCommerce (do not share these with anyone)<br />
+-Add your site URL & API Credentials to config.json<br />
+-Install Python3 if not already installed<br />
+-pip install woocommerce<br />
+-pip install pandas<br />
+
+(further pre-reqs may be required for anything other than script.py currently)
+
 Usage of script.py <br />
-./script.py
+-Place a csv output of ISBN, Synopsis in the same folder as script.py<br />
+-python ./script.py<br />
+
+Example Output:<br />
+PS C:\BookDescriptor> .\script.py<br />
+Searching for latest CSV file...<br />
+Found CSV file: TitleDataExport_2023041122.csv<br />
+Loaded CSV file: TitleDataExport_2023041122.csv<br />
+Searching for products without descriptions...<br />
+Downloading page 1...<br />
+Downloading page 2...<br />
+Downloading page 3...<br />
+Downloading page 4...<br />
+Downloading page 5...<br />
+Downloading page 6...<br />
+Downloading page 7...<br />
+Downloading page 8...<br />
+Downloading page 9...<br />
+Downloading page 10...<br />
+Total products downloaded: 1000<br />
+264 products require a description.<br />
+Total rows in DataFrame: 1000<br />
+Processing SKU 9781905847518<br />
+Successfully updated product 407<br />
+Processing SKU 9781741047226<br />
+Successfully updated product 409<br />
+Processing SKU 9780571280421<br />
+Successfully updated product 411<br />
+Processing SKU 9780007137312<br />
+Successfully updated product 413<br />
