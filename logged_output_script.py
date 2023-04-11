@@ -72,7 +72,8 @@ def get_products_without_description():
     print(f'Total products downloaded: {total_products_processed}')
     return sku_list
 
-
+# Create a new DataFrame to store products without a synopsis
+products_without_synopsis = pd.DataFrame(columns=['SKU'])
 
 # Get the latest CSV file
 print('Searching for latest CSV file...')
@@ -122,6 +123,7 @@ for index, row in df.iterrows():
     
     if pd.isna(synopsis):
         print(f'No synopsis found for product with SKU {sku} - skipping.')
+        products_without_synopsis = products_without_synopsis.append({'SKU': sku}, ignore_index=True)
         continue
     
     # Get the current product from the WooCommerce API
@@ -148,3 +150,9 @@ for index, row in df.iterrows():
             print(f'Successfully updated product {sku}')
         except Exception as e:
             logging.info(f'Error updating product {sku}: {e}')
+
+# Save products_without_synopsis to a CSV file
+current_date = datetime.datetime.now().strftime('%Y-%m-%d')
+output_filename = f'needSynopsis_{current_date}.csv'
+products_without_synopsis.to_csv(output_filename, index=False)
+print(f'Saved {len(products_without_synopsis)} products without synopsis to {output_filename}')

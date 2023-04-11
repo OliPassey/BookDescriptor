@@ -1,18 +1,11 @@
-import io
-import base64
-from tkinter import ttk
-from urllib.request import urlopen
-from PIL import Image, ImageTk
 import re
 import glob
 import os
 import logging
 import pandas as pd
+import json
+import argparse
 from woocommerce import API
-import tkinter as tk
-from tkinter.scrolledtext import ScrolledText
-import sys
-import threading
 
 # Setup Logging
 logging.basicConfig(filename='log.txt', filemode='w', level=logging.INFO, format='%(asctime)s - %(message)s')
@@ -31,38 +24,70 @@ wc_api = API(
     timeout=30
 )
 
-def main():
-    def get_products_without_description():
-        sku_list = []
-        page = 1
+def get_products_without_description():
+    """
+    Searches the WooCommerce API for the last 1000 created products without a description
+    and returns a list of their SKUs.
+    """
+    sku_list = []
+    page = 1
+    total_products_processed = 0
+    products_per_page = 100
+    max_products = 300
 
-        while True:
-            # Get all products from the WooCommerce API with pagination
-            response = wc_api.get('products', params={'per_page': 100, 'page': page})
-            all_products = response.json()
+    while total_products_processed < max_products:
+        # Get all products from the WooCommerce API with pagination and ordering
+        response = wc_api.get('products', params={
+            'per_page': products_per_page,
+            'page': page,
+            'order': 'desc',
+            'orderby': 'date'
+        })
+        all_products = response.json()
 
-            # If there are no more products, break the loop
-            if not all_products:
+        # If there are no more products, break the loop
+        if not all_products:
+            break
+
+        print(f'Downloading page {page}...')  # Print the current page number
+
+        # Loop through each product
+        for product in all_products:
+            total_products_processed += 1
+            # If the product has no description, add its SKU to the list
+            if not product['description']:
+                sku_list.append(product['sku'])
+
+            # Break the loop if total_products_processed reaches max_products
+            if total_products_processed >= max_products:
                 break
 
-            # Loop through each product
-            for product in all_products:
-                # If the product has no description, add its SKU to the list
-                if not product['description']:
-                    sku_list.append(product['sku'])
-            
-            # Increment the page number
-            page += 1
-        
-        return sku_list
+        # Increment the page number
+        page += 1
 
+    print(f'Total products downloaded: {total_products_processed}')
+    return sku_list
+
+def save_products_to_json(products):
+    with open("products.json", "w") as f:
+        json.dump(products, f)
+
+def load_products_from_json():
+    with open("products.json", "r") as f:
+        sku_list = json.load(f)
+    return sku_list
+
+def save_local_output(sku_list, df):
+    filtered_df = df[df['SKU'].apply(lambda x: str(x) in sku_list)]
+    filtered_df.to_csv("output.csv", index=False, encoding='cp1252')
+
+def main(load_from_local):
     # Get the latest CSV file
     print('Searching for latest CSV file...')
     csv_file = max(glob.glob('TitleDataExport_*.csv'), key=os.path.getctime)
     print(f'Found CSV file: {csv_file}')
 
     # Load the CSV file into a Pandas dataframe
-    print(f'Loading CSV file: {csv_file}...')
     try:
         df = pd.read_csv(csv_file, usecols=['SKU', 'Synopsis'], encoding='cp1252')
         print(f'Loaded CSV file: {csv_file}')
@@ -72,15 +97,20 @@ def main():
 
     # Get the list of SKUs that require a description
     print('Searching for products without descriptions...')
-    try:
-        sku_list = get_products_without_description()
-        print(f'{len(sku_list)} products require a description.')
-    except Exception as e:
-        print(f'Error getting list of products without descriptions: {e}')
-        exit()
+    if load_from_local:
+        sku_list = load_products_from_json()
+    else:
+        try:
+            sku_list = get_products_without_description()
+            save_products_to_json(sku_list)
+        except Exception as e:
+            print(f'Error getting list of products without descriptions: {e}')
+            exit()
 
-    # prints the first 10 rows of the dataframe, can be commented out in normal operation
-    #print(df.head(10))  
+    print(f'{len(sku_list)} products require a description.')
+    print(f'Saving local output for manual import if required.')
+    save_local_output(sku_list, df)
+
 
     # Loop through each row in the dataframe
     for index, row in df.iterrows():
@@ -98,7 +128,7 @@ def main():
             logging.info(f'SKU {sku} not in the list of products requiring a description.')  # Debugging print statement
             continue
         
-        print(f'Processing SKU {sku} with synopsis "{synopsis}"...')
+        print(f'Processing SKU {sku}')
         
         if pd.isna(synopsis):
             print(f'No synopsis found for product with SKU {sku} - skipping.')
@@ -122,44 +152,20 @@ def main():
             if not re.search('<.*?>', synopsis):
                 synopsis = f'<p>{synopsis}</p>'
             
-            logging.info(f'Updating product {product_id} with new description: {synopsis}')
+            logging.info(f'Updating product {product_id}')
             try:
                 wc_api.put(f'products/{product_id}', data={'description': synopsis})
-                print(f'Successfully updated product {product_id} with new description: {synopsis}')
+                print(f'Successfully updated product {product_id}')
             except Exception as e:
                 logging.info(f'Error updating product {product_id}: {e}')
 
 
-if __name__ == '__main__':
-    # Create a function to redirect console output to the GUI
-    def redirector(input_str):
-        console.insert(tk.END, input_str)
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Update product descriptions from a CSV file.")
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument("-download", action="store_true", help="Download products from the WooCommerce API.")
+    group.add_argument("-local", action="store_true", help="Load products from a local JSON file.")
+    
+    args = parser.parse_args()
 
-    sys.stdout.write = redirector
-
-    # Create the GUI window
-    root = tk.Tk()
-    root.title("PTS-BookDescriptor")
-    root.geometry("800x600")
-
-    # Create a console output
-    console = ScrolledText(root, wrap=tk.WORD, width=100, height=30)
-    console.grid(column=0, row=0, pady=(10, 0))
-
-    # Create a Start button
-    def start_button_click():
-        console.delete('1.0', tk.END)
-        threading.Thread(target=main).start()
-
-    start_button = tk.Button(root, text="Start", command=start_button_click)
-    start_button.grid(column=0, row=1, pady=10)
-
-    # Create an exit button
-    def exit_button_click():
-        root.destroy()
-
-    exit_button = tk.Button(root, text="Exit", command=exit_button_click)
-    exit_button.grid(column=0, row=2, pady=10)
-
-    # Run the GUI
-    root.mainloop()
+    main(load_from_local=args.local)
