@@ -14,18 +14,18 @@ The script helps streamline the process of updating product descriptions on the 
 
 The script is capable of downloading 1000 products per minute, if you have 25k products expect the download to take 25 minutes. Also think about how many API calls you are likely to make. In my first run i had 8k titles to fix and after 4k (many hours) it crashed Apache or SQL (not sure which).
 
-Other parts of this repo:
--script.py works. - use this in the fist instance
--bookDescriptor.py in progress, will allow for parts of the script to be run on-demand, and makes it easier to dump out the info the script is processing.
--gui.py work in progress towards an executable one file version of the script.
--logged output, working towards dumping out a list of SKUs it couldn't find a synopsis for so you can potentially search elsewhere for them.
+Other parts of this repo: <br />
+-script.py works. - use this in the fist instance. <br />
+-bookDescriptor.py in progress, will allow for parts of the script to be run on-demand, and makes it easier to dump out the info the script is processing. <br />
+-gui.py work in progress towards an executable one file version of the script. <br />
+-logged output, working towards dumping out a list of SKUs it couldn't find a synopsis for so you can potentially search elsewhere for them. <br />
 -old stock, start on work to identify dead stock and remove it from the site.
 
 Please test this script on a dev site before letting loose on production, i am not responsible for what this script does to your site, even though i have used and tested it extensively.
 
-Usage of bookDescriptor.py
-./bookDescriptor.py --download 
-./bookDescriptor.py --local
+Usage of bookDescriptor.py <br />
+./bookDescriptor.py --download  <br />
+./bookDescriptor.py --local <br />
 
-Usage of script.py
+Usage of script.py <br />
 ./script.py
