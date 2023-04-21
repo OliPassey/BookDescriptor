@@ -16,18 +16,7 @@ The script helps streamline the process of updating product descriptions on the 
 
 The script is capable of downloading 1000 products per minute, if you have 25k products expect the download to take 25 minutes. Also think about how many API calls you are likely to make. In my first run i had 8k titles to fix and after 4k (many hours) it crashed Apache or SQL (not sure which).
 
-Other parts of this repo: <br />
--script.py works. - use this in the fist instance. <br />
--bookDescriptor.py in progress, will allow for parts of the script to be run on-demand, and makes it easier to dump out the info the script is processing. <br />
--gui.py work in progress towards an executable one file version of the script. <br />
--logged output, working towards dumping out a list of SKUs it couldn't find a synopsis for so you can potentially search elsewhere for them. <br />
--old stock, start on work to identify dead stock and remove it from the site.
-
 Please test this script on a dev site before letting loose on production, i am not responsible for what this script does to your site, even though i have used and tested it extensively.
-
-Usage of bookDescriptor.py (not ready for production yet) <br />
-./bookDescriptor.py --download  <br />
-./bookDescriptor.py --local <br />
 
 ## Installation & Usage
 -Clone the repo locally (run on your PC, not the webserver)<br />
@@ -36,12 +25,12 @@ Usage of bookDescriptor.py (not ready for production yet) <br />
 -Install Python3 if not already installed<br />
 -pip install woocommerce<br />
 -pip install pandas<br />
+-pip install tk<br />
+-pip install pillow<br />
 
-(further pre-reqs may be required for anything other than script.py currently)
-
-Usage of script.py <br />
--Place a csv output of ISBN, Synopsis in the same folder as script.py<br />
--python ./script.py<br />
+Usage <br />
+-Place a csv output of ISBN, Synopsis in the same folder as gui.py<br />
+-python ./gui.py<br />
 
 Example Output:<br />
 PS C:\BookDescriptor> .\script.py<br />
